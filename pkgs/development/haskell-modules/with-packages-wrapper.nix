@@ -95,28 +95,16 @@ symlinkJoin {
         makeWrapper ${ghc}/bin/$prg $out/bin/$prg --add-flags "${packageDBFlag}=${packageCfgDir}"
       fi
     done
-  '' + (lib.optionalString targetPlatform.isDarwin ''
-    # Work around a linker limit in macOS Sierra (see generic-builder.nix):
-    local packageConfDir="$out/lib/${ghc.name}/package.conf.d";
-    local dynamicLinksDir="$out/lib/links"
-    mkdir -p $dynamicLinksDir
-    # Clean up the old links that may have been (transitively) included by
-    # symlinkJoin:
-    rm -f $dynamicLinksDir/*
-    for d in $(grep dynamic-library-dirs $packageConfDir/*|awk '{print $2}'|sort -u); do
-      ln -s $d/*.dylib $dynamicLinksDir
-    done
-    for f in $packageConfDir/*.conf; do
-      # Initially, $f is a symlink to a read-only file in one of the inputs
-      # (as a result of this symlinkJoin derivation).
-      # Replace it with a copy whose dynamic-library-dirs points to
-      # $dynamicLinksDir
-      cp $f $f-tmp
-      rm $f
-      sed "s,dynamic-library-dirs: .*,dynamic-library-dirs: $dynamicLinksDir," $f-tmp > $f
-      rm $f-tmp
-    done
-  '') + ''
+
+    # haddock was referring to the base ghc, https://github.com/NixOS/nixpkgs/issues/36976
+    if [[ -x "${ghc}/bin/haddock" ]]; then
+      rm -f $out/bin/haddock
+      makeWrapper ${ghc}/bin/haddock $out/bin/haddock    \
+        --add-flags '"-B$NIX_${ghcCommandCaps}_LIBDIR"'  \
+        --set "NIX_${ghcCommandCaps}_LIBDIR" "${libDir}"
+    fi
+
+  '' + ''
     ${lib.optionalString hasLibraries "$out/bin/${ghcCommand}-pkg recache"}
     ${# ghcjs will read the ghc_libdir file when resolving plugins.
       lib.optionalString (isGhcjs && ghcLibdir != null) ''
