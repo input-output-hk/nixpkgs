@@ -15,12 +15,20 @@ stdenv.mkDerivation rec {
 
   patches = if hostPlatform.isCygwin then [ ./1.40.4-cygwin-nls.patch ] else null;
 
-  postInstall =
-    '' wrapProgram "$out/bin/help2man" \
-         --prefix PERL5LIB : "$(echo ${LocaleGettext}/lib/perl*/site_perl)" \
-         ${stdenv.lib.optionalString hostPlatform.isCygwin "--prefix PATH : ${gettext}/bin"}
-    '';
-
+  # We don't use makeWrapper here because it uses substitutions our
+  # bootstrap shell can't handle.
+  postInstall = ''
+    gettext_perl="$(echo ${LocaleGettext}/lib/perl*/site_perl)"
+    mv $out/bin/help2man $out/bin/.help2man-wrapped
+    cat > $out/bin/help2man <<EOF
+    #! $SHELL -e
+    export PERL5LIB=\''${PERL5LIB:+:}$gettext_perl
+    ${stdenv.lib.optionalString hostPlatform.isCygwin
+        ''export PATH=\''${PATH:+:}${gettext}/bin''}
+    exec -a \$0 $out/bin/.help2man-wrapped "\$@"
+    EOF
+    chmod +x $out/bin/help2man
+  '';
 
   meta = with stdenv.lib; {
     description = "Generate man pages from `--help' output";
