@@ -9,7 +9,7 @@
 , cc ? null, libc ? null, bintools, coreutils ? null, shell ? stdenvNoCC.shell
 , zlib ? null, extraPackages ? [], extraBuildCommands ? ""
 , isGNU ? false, isClang ? cc.isClang or false, gnugrep ? null
-, buildPackages ? {}
+, buildPackages ? {}, isBootstrap ? false
 }:
 
 with stdenvNoCC.lib;
@@ -121,6 +121,7 @@ stdenv.mkDerivation {
         local dst="$1"
         local wrapper="$2"
         export prog="$3"
+        export use_response_file_by_default=${if isBootstrap then "0" else "1"}
         substituteAll "$wrapper" "$out/bin/$dst"
         chmod +x "$out/bin/$dst"
       }

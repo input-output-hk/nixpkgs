@@ -61,7 +61,7 @@ let
   # the bootstrap.  In all stages, we build an stdenv and the package
   # set that can be built with that stdenv.
   stageFun = prevStage:
-    { name, overrides ? (self: super: {}), extraNativeBuildInputs ? [] }:
+    { name, overrides ? (self: super: {}), extraNativeBuildInputs ? [], isBootstrap ? false }:
 
     let
 
@@ -98,6 +98,7 @@ let
           isGNU = true;
           libc = getLibc prevStage;
           inherit (prevStage) coreutils gnugrep;
+          inherit isBootstrap;
           name = name;
           stdenvNoCC = prevStage.ccWrapperStdenv;
         };
@@ -190,6 +191,7 @@ in
   # overrides attribute and the inherit syntax.
   (prevStage: stageFun prevStage {
     name = "bootstrap-gcc-wrapper";
+    isBootstrap = true;
 
     # Rebuild binutils to use from stage2 onwards.
     overrides = self: super: {
@@ -214,6 +216,7 @@ in
   # compiling our own Glibc.
   (prevStage: stageFun prevStage {
     name = "bootstrap-gcc-wrapper";
+    isBootstrap = true;
 
     overrides = self: super: {
       inherit (prevStage)
@@ -235,6 +238,7 @@ in
   # binutils and rest of the bootstrap tools, including GCC.
   (prevStage: stageFun prevStage {
     name = "bootstrap-gcc-wrapper";
+    isBootstrap = true;
 
     overrides = self: super: rec {
       inherit (prevStage)
