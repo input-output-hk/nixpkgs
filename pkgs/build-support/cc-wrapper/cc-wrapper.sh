@@ -181,7 +181,7 @@ fi
 PATH="$path_backup"
 # Old bash workaround, see above.
 
-if (( "${NIX_CC_USE_RESPONSE_FILE:-1}" >= 1 )); then
+if (( "${NIX_CC_USE_RESPONSE_FILE:-@use_response_file_by_default@}" >= 1 )); then
     RESPONSE_FILE=$(mktemp)
     printf "%q\n" \
        ${extraBefore+"${extraBefore[@]}"} \
