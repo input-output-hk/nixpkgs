@@ -951,7 +951,15 @@ configurePhase() {
         )
         echoCmd 'configure flags' "${flagsArray[@]}"
         # shellcheck disable=SC2086
+        set +e
         $configureScript "${flagsArray[@]}"
+        if [ "$?" != "0" ]; then
+            echo "Configure failed. The contents of all config.log files follows to aid debugging"
+            find . -ignore_readdir_race -name config.log -print -exec cat {} \;
+            die "configure failed"
+        fi
+        set -e
+
         unset flagsArray
     else
         echo "no configure script, doing nothing"
