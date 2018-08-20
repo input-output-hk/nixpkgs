@@ -65,7 +65,10 @@ expandResponseParams() {
             if [ -x "@expandResponseParams@" ]; then
                 # params is used by caller
                 #shellcheck disable=SC2034
-                readarray -d '' params < <("@expandResponseParams@" "$@")
+                # We don't use the `-d` delim with readarray as
+                # that might not be available in the bootstrap
+                # shell.
+                readarray params < <("@expandResponseParams@" "$@" | while read line; do echo -n "$line "; done)
                 return 0
             else
                 echo "Response files aren't supported during bootstrapping" >&2
