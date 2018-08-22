@@ -176,7 +176,7 @@ let
 
   ghcEnv = ghc.withPackages (p: haskellBuildInputs);
 
-  setupCommand = "./Setup";
+  setupCommand = "perf-metrics $curPhase ./Setup";
 
   ghcCommand' = if isGhcjs then "ghcjs" else "ghc";
   ghcCommand = "${ghc.targetPrefix}${ghcCommand'}";
