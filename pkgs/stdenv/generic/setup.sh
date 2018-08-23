@@ -1215,7 +1215,7 @@ genericBuild() {
     fi
 
     for curPhase in $phases; do
-        start=$(date '+%s')
+        phase_start_time=$(date '+%s')
         if [[ "$curPhase" = buildPhase && -n "${dontBuild:-}" ]]; then continue; fi
         if [[ "$curPhase" = checkPhase && -z "${doCheck:-}" ]]; then continue; fi
         if [[ "$curPhase" = installPhase && -n "${dontInstall:-}" ]]; then continue; fi
@@ -1240,8 +1240,8 @@ genericBuild() {
         if [ "$curPhase" = unpackPhase ]; then
             cd "${sourceRoot:-.}"
         fi
-        end=$(date '+%s')
-        duration=$((end - start))
+        phase_end_time=$(date '+%s')
+        duration=$((phase_end_time - phase_start_time))
         if [ -n "${enablePhaseMetrics:-}" ]; then
             echo "time.$curPhase $duration" >> "$NIX_BUILD_TOP/metrics"
         fi
