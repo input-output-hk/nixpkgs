@@ -43,6 +43,7 @@ in
 , maintainers ? []
 , doCoverage ? false
 , doHaddock ? !(ghc.isHaLVM or false)
+, enablePhaseMetrics ? false
 , passthru ? {}
 , pkgconfigDepends ? [], libraryPkgconfigDepends ? [], executablePkgconfigDepends ? [], testPkgconfigDepends ? [], benchmarkPkgconfigDepends ? []
 , testDepends ? [], testHaskellDepends ? [], testSystemDepends ? []
@@ -176,7 +177,7 @@ let
 
   ghcEnv = ghc.withPackages (p: haskellBuildInputs);
 
-  setupCommand = "./Setup";
+  setupCommand = "performance-metrics $curPhase ./Setup";
 
   ghcCommand' = if isGhcjs then "ghcjs" else "ghc";
   ghcCommand = "${ghc.targetPrefix}${ghcCommand'}";
@@ -189,6 +190,7 @@ in
 assert allPkgconfigDepends != [] -> pkgconfig != null;
 
 stdenv.mkDerivation ({
+  inherit enablePhaseMetrics;
   name = "${pname}-${version}";
 
   outputs = [ "out" ] ++ (optional enableSeparateDataOutput "data") ++ (optional enableSeparateDocOutput "doc");
