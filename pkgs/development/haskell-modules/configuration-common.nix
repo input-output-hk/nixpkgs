@@ -609,7 +609,7 @@ self: super: {
   };
 
   # Need newer versions of their dependencies than the ones we have in LTS-10.x.
-  cabal2nix = super.cabal2nix.overrideScope (self: super: { hackage-db = self.hackage-db_2_0_1; });
+  cabal2nix = dontCheck (super.cabal2nix.overrideScope (self: super: { hackage-db = self.hackage-db_2_0_1; }));
   hlint = super.hlint.overrideScope (self: super: { haskell-src-exts = self.haskell-src-exts_1_20_2; });
 
   # https://github.com/bos/configurator/issues/22
