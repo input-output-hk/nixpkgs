@@ -109,5 +109,7 @@ self: super: {
     text = self.text_1_2_3_0;
     haddock-library = dontHaddock (dontCheck self.haddock-library_1_5_0_1);
   })));
-
+  hpack = super.hpack.overrideScope (self: super: {
+    Cabal = self.Cabal_2_2_0_0;
+  });
 }
