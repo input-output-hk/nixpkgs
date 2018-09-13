@@ -11,6 +11,10 @@ set -u
 [[ -z ${crossConfig-} ]] || (( "$hostOffset" < 0 )) || return 0
 
 bintoolsWrapper_addLDVars () {
+    # Allow to control the addition of -L items via a nix-support file
+    if [[ -f "$1/nix-support/bintools-no-addLDVars" ]]; then
+       return 0
+    fi
     case $depHostOffset in
         -1) local role='BUILD_' ;;
         0)  local role='' ;;
