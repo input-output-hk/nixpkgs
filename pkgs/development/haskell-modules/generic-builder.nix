@@ -453,6 +453,8 @@ stdenv.mkDerivation ({
     ''}
     ${optionalString enableSeparateDataOutput "mkdir -p $data"}
 
+    mkdir -p $out/nix-support
+    touch $out/nix-support/bintools-no-addLDVars
     runHook postInstall
   '';
 
