@@ -38,7 +38,7 @@ let
   ghcCommand'    = if isGhcjs then "ghcjs" else "ghc";
   ghcCommand = "${ghc.targetPrefix}${ghcCommand'}";
   ghcCommandCaps= lib.toUpper ghcCommand';
-  libDir        = if isHaLVM then "$out/lib/HaLVM-${ghc.version}" else "$out/${ghcCommand}-${ghc.version}";
+  libDir        = if isHaLVM then "$out/lib/HaLVM-${ghc.version}" else "$out/lib/${ghcCommand}-${ghc.version}";
   docDir        = "$out/share/doc/ghc/html";
   packageCfgDir = "${libDir}/package.conf.d";
   paths         = lib.filter (x: x ? isHaskellLibrary) (lib.closePropagation packages);
@@ -95,6 +95,28 @@ symlinkJoin {
         makeWrapper ${ghc}/bin/$prg $out/bin/$prg --add-flags "${packageDBFlag}=${packageCfgDir}"
       fi
     done
+  '' + (lib.optionalString targetPlatform.isDarwin ''
+    # Work around a linker limit in macOS Sierra (see generic-builder.nix):
+    local packageConfDir="$out/lib/${ghc.name}/package.conf.d";
+    local dynamicLinksDir="$out/lib/links"
+    mkdir -p $dynamicLinksDir
+    # Clean up the old links that may have been (transitively) included by
+    # symlinkJoin:
+    rm -f $dynamicLinksDir/*
+    for d in $(grep dynamic-library-dirs $packageConfDir/*|awk '{print $2}'|sort -u); do
+      ln -s $d/*.dylib $dynamicLinksDir
+    done
+    for f in $packageConfDir/*.conf; do
+      # Initially, $f is a symlink to a read-only file in one of the inputs
+      # (as a result of this symlinkJoin derivation).
+      # Replace it with a copy whose dynamic-library-dirs points to
+      # $dynamicLinksDir
+      cp $f $f-tmp
+      rm $f
+      sed "s,dynamic-library-dirs: .*,dynamic-library-dirs: $dynamicLinksDir," $f-tmp > $f
+      rm $f-tmp
+    done
+  '') + ''
     ${lib.optionalString hasLibraries "$out/bin/${ghcCommand}-pkg recache"}
     ${# ghcjs will read the ghc_libdir file when resolving plugins.
       lib.optionalString (isGhcjs && ghcLibdir != null) ''
