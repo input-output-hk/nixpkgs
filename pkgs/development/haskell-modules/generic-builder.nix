@@ -1,5 +1,6 @@
 { stdenv, buildPackages, buildHaskellPackages, ghc
 , jailbreak-cabal, hscolour, cpphs, nodejs, shellFor
+, runCommandNoCC
 }:
 
 let
@@ -22,6 +23,7 @@ in
 , haddockFlags ? []
 , description ? ""
 , doCheck ? !isCross && stdenv.lib.versionOlder "7.4" ghc.version
+, splitCheck ? false
 , doBenchmark ? false
 , doHoogle ? true
 , editedCabalFile ? null
@@ -249,7 +251,8 @@ stdenv.mkDerivation ({
   outputs = [ "out" ]
          ++ (optional enableSeparateDataOutput "data")
          ++ (optional enableSeparateDocOutput "doc")
-         ++ (optional enableSeparateBinOutput "bin");
+         ++ (optional enableSeparateBinOutput "bin")
+         ++ (optional splitCheck "testdata");
   setOutputFlags = false;
 
   pos = builtins.unsafeGetAttrPos "pname" args;
@@ -353,7 +356,11 @@ stdenv.mkDerivation ({
 
     echo setupCompileFlags: $setupCompileFlags
     ${nativeGhcCommand} $setupCompileFlags --make -o Setup -odir $TMPDIR -hidir $TMPDIR $i
-
+    ${optionalString splitCheck ''
+      HI_TMP_DIR=$(mktemp -d)
+      ${nativeGhcCommand} $setupCompileFlags ${./ListTests.hs} -o ListTests -odir $HI_TMP_DIR -hidir $HI_TMP_DIR
+      rm -rf $HI_TMP_DIR
+    ''}
     runHook postCompileBuildDriver
   '';
 
@@ -387,7 +394,8 @@ stdenv.mkDerivation ({
 
   inherit doCheck;
 
-  checkPhase = ''
+  checkPhase = if splitCheck then ''
+  '' else ''
     runHook preCheck
     ${setupCommand} test ${testTarget}
     runHook postCheck
@@ -452,6 +460,15 @@ stdenv.mkDerivation ({
     mkdir -p $doc
     ''}
     ${optionalString enableSeparateDataOutput "mkdir -p $data"}
+    ${optionalString splitCheck ''
+      mkdir -pv $testdata/bin
+      ./ListTests > $NIX_BUILD_TOP/test-names
+      for x in $(cat $NIX_BUILD_TOP/test-names); do
+        if [ -f dist/build/$x/$x ]; then
+          cp -v "dist/build/$x/$x" $testdata/bin/
+        fi
+      done
+    ''}
 
     mkdir -p $out/nix-support
     touch $out/nix-support/bintools-no-addLDVars
@@ -485,6 +502,20 @@ stdenv.mkDerivation ({
       packages = p: [ drv ];
       inherit shellHook;
     };
+
+    testrun = runCommandNoCC "${pname}-test" { src = drv.src; } ''
+      unpackPhase
+      sourceRoot=$(realpath $sourceRoot)
+      mkdir $out
+      pushd ${drv.testdata}/bin
+      for test in *; do
+        pushd $sourceRoot
+        ${drv.testdata}/bin/''${test} | tee $out/''${test}.log
+        popd
+      done
+      popd
+    '';
+    allTestsInClosure = builtins.concatLists ( (map (dep: if dep ? testrun then [ dep.testrun ] else []) drv.getBuildInputs.haskellBuildInputs) ++ [ [ drv.testrun ] ]);
 
   };
 
