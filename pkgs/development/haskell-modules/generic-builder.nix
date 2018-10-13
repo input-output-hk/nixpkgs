@@ -1,6 +1,6 @@
 { stdenv, buildPackages, buildHaskellPackages, ghc
 , jailbreak-cabal, hscolour, cpphs, nodejs
-, buildPlatform, hostPlatform
+, buildPlatform, hostPlatform, runCommandNoCC
 }:
 
 let
@@ -21,6 +21,7 @@ in
 , configureFlags ? []
 , description ? ""
 , doCheck ? !isCross && (stdenv.lib.versionOlder "7.4" ghc.version)
+, splitCheck ? false
 , doBenchmark ? false
 , doHoogle ? true
 , editedCabalFile ? null
@@ -185,7 +186,7 @@ let
 
   nativeGhcCommand = "${nativeGhc.targetPrefix}ghc";
 
-in
+in stdenv.lib.fix (drv:
 
 assert allPkgconfigDepends != [] -> pkgconfig != null;
 
@@ -193,7 +194,7 @@ stdenv.mkDerivation ({
   inherit enablePhaseMetrics;
   name = "${pname}-${version}";
 
-  outputs = [ "out" ] ++ (optional enableSeparateDataOutput "data") ++ (optional enableSeparateDocOutput "doc");
+  outputs = [ "out" ] ++ (optional enableSeparateDataOutput "data") ++ (optional enableSeparateDocOutput "doc") ++ (optional splitCheck "testdata");
   setOutputFlags = false;
 
   pos = builtins.unsafeGetAttrPos "pname" args;
@@ -275,6 +276,7 @@ stdenv.mkDerivation ({
 
     echo setupCompileFlags: $setupCompileFlags
     ${nativeGhcCommand} $setupCompileFlags --make -o Setup -odir $TMPDIR -hidir $TMPDIR $i
+    ${optionalString splitCheck "${nativeGhcCommand} $setupCompileFlags ${./ListTests.hs} -o ListTests"}
 
     runHook postCompileBuildDriver
   '';
@@ -306,7 +308,9 @@ stdenv.mkDerivation ({
     runHook postBuild
   '';
 
-  checkPhase = ''
+  checkPhase = if splitCheck then ''
+    echo "split check enabled: Skipping"
+  '' else ''
     runHook preCheck
     ${setupCommand} test ${testTarget}
     runHook postCheck
@@ -362,6 +366,15 @@ stdenv.mkDerivation ({
     mkdir -p $doc
     ''}
     ${optionalString enableSeparateDataOutput "mkdir -p $data"}
+    ${optionalString splitCheck ''
+      mkdir -pv $testdata/bin
+      ./ListTests > $NIX_BUILD_TOP/test-names
+      for x in $(cat $NIX_BUILD_TOP/test-names); do
+        if [ -f dist/build/$x/$x ]; then
+          cp -v "dist/build/$x/$x" $testdata/bin/
+        fi
+      done
+    ''}
 
     mkdir -p $out/nix-support
     touch $out/nix-support/bintools-no-addLDVars
@@ -373,6 +386,10 @@ stdenv.mkDerivation ({
     inherit pname version;
 
     compiler = ghc;
+
+    getBuildInputs = {
+      inherit haskellBuildInputs systemBuildInputs;
+    };
 
     isHaskellLibrary = hasActiveLibrary;
 
@@ -401,6 +418,19 @@ stdenv.mkDerivation ({
         ${shellHook}
       '';
     };
+    testrun = runCommandNoCC "${pname}-test" { src = drv.src; enablePhaseMetrics = true; } ''
+      unpackPhase
+      sourceRoot=$(realpath $sourceRoot)
+      mkdir $out
+      pushd ${drv.testdata}/bin
+      for test in *; do
+        pushd $sourceRoot
+        performance-metrics "''${test}" ${drv.testdata}/bin/''${test} | tee $out/''${test}.log
+        popd
+      done
+      popd
+    '';
+    allTestsInClosure = builtins.concatLists ( (map (dep: if dep ? testrun then [ dep.testrun ] else []) drv.getBuildInputs.haskellBuildInputs) ++ [ [ drv.testrun ] ]);
   };
 
   meta = { inherit homepage license platforms; }
@@ -434,4 +464,5 @@ stdenv.mkDerivation ({
 // optionalAttrs (dontStrip)            { inherit dontStrip; }
 // optionalAttrs (hardeningDisable != []) { inherit hardeningDisable; }
 // optionalAttrs (buildPlatform.isLinux){ LOCALE_ARCHIVE = "${glibcLocales}/lib/locale/locale-archive"; }
+)
 )
