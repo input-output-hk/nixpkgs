@@ -33,6 +33,7 @@ in
 , enableSplitObjs ? null # OBSOLETE, use enableDeadCodeElimination
 , enableDeadCodeElimination ? (!stdenv.isDarwin)  # TODO: use -dead_strip  for darwin
 , enableStaticLibraries ? true
+, libraryFrameworkDepends ? [], executableFrameworkDepends ? []
 , extraLibraries ? [], librarySystemDepends ? [], executableSystemDepends ? []
 , homepage ? "http://hackage.haskell.org/package/${pname}"
 , platforms ? ghc.meta.platforms
@@ -47,8 +48,8 @@ in
 , enablePhaseMetrics ? false
 , passthru ? {}
 , pkgconfigDepends ? [], libraryPkgconfigDepends ? [], executablePkgconfigDepends ? [], testPkgconfigDepends ? [], benchmarkPkgconfigDepends ? []
-, testDepends ? [], testHaskellDepends ? [], testSystemDepends ? []
-, benchmarkDepends ? [], benchmarkHaskellDepends ? [], benchmarkSystemDepends ? []
+, testDepends ? [], testHaskellDepends ? [], testSystemDepends ? [], testFrameworkDepends ? []
+, benchmarkDepends ? [], benchmarkHaskellDepends ? [], benchmarkSystemDepends ? [], benchmarkFrameworkDepends ? []
 , testTarget ? ""
 , broken ? false
 , preCompileBuildDriver ? "", postCompileBuildDriver ? ""
@@ -158,20 +159,28 @@ let
     (optionalString (versionOlder "7.10" ghc.version && !isHaLVM) "-threaded")
   ];
 
-  isHaskellPkg = x: (x ? pname) && (x ? version) && (x ? env);
+  isHaskellPkg = x: x ? isHaskellLibrary;
   isSystemPkg = x: !isHaskellPkg x;
 
   allPkgconfigDepends = pkgconfigDepends ++ libraryPkgconfigDepends ++ executablePkgconfigDepends ++
                         optionals doCheck testPkgconfigDepends ++ optionals doBenchmark benchmarkPkgconfigDepends;
 
-  nativeBuildInputs = [ ghc nativeGhc removeReferencesTo ] ++ optional (allPkgconfigDepends != []) pkgconfig ++
-                      buildTools ++ libraryToolDepends ++ executableToolDepends;
-  propagatedBuildInputs = buildDepends ++ libraryHaskellDepends ++ executableHaskellDepends;
-  otherBuildInputs = setupHaskellDepends ++ extraLibraries ++ librarySystemDepends ++ executableSystemDepends ++
-                     optionals (allPkgconfigDepends != []) allPkgconfigDepends ++
-                     optionals doCheck (testDepends ++ testHaskellDepends ++ testSystemDepends ++ testToolDepends) ++
-                     optionals doBenchmark (benchmarkDepends ++ benchmarkHaskellDepends ++ benchmarkSystemDepends ++ benchmarkToolDepends);
-  allBuildInputs = propagatedBuildInputs ++ otherBuildInputs;
+  depsBuildBuild = [ nativeGhc ];
+  nativeBuildInputs = [ ghc removeReferencesTo ] ++ optional (allPkgconfigDepends != []) pkgconfig ++
+                      setupHaskellDepends ++
+                      buildTools ++ libraryToolDepends ++ executableToolDepends ++
+                      optionals doCheck testToolDepends ++
+                      optionals doBenchmark benchmarkToolDepends;
+  propagatedBuildInputs = buildDepends ++ libraryHaskellDepends ++ executableHaskellDepends ++ libraryFrameworkDepends;
+  otherBuildInputs = extraLibraries ++ librarySystemDepends ++ executableSystemDepends ++ executableFrameworkDepends ++
+                     allPkgconfigDepends ++
+                     optionals doCheck (testDepends ++ testHaskellDepends ++ testSystemDepends ++ testFrameworkDepends) ++
+                     optionals doBenchmark (benchmarkDepends ++ benchmarkHaskellDepends ++ benchmarkSystemDepends ++ benchmarkFrameworkDepends);
+
+
+  allBuildInputs = propagatedBuildInputs ++ otherBuildInputs ++ depsBuildBuild;
+  isHaskellPartition =
+    stdenv.lib.partition isHaskellPkg allBuildInputs;
 
   haskellBuildInputs = stdenv.lib.filter isHaskellPkg allBuildInputs;
   systemBuildInputs = stdenv.lib.filter isSystemPkg allBuildInputs;
@@ -387,11 +396,20 @@ stdenv.mkDerivation ({
 
     compiler = ghc;
 
+
     getBuildInputs = {
-      inherit haskellBuildInputs systemBuildInputs;
+      inherit propagatedBuildInputs otherBuildInputs allPkgconfigDepends;
+      haskellBuildInputs = isHaskellPartition.right;
+      systemBuildInputs = isHaskellPartition.wrong;
+            haskellBuildInputsRecursive = let
+        f = (drv: { key = drv.name; value = drv; });
+      in map (x: x.value) (builtins.genericClosure {
+        startSet = map f isHaskellPartition.right;
+        operator = { key, value }: map f value.getBuildInputs.haskellBuildInputs;
+      });
     };
 
-    isHaskellLibrary = hasActiveLibrary;
+    isHaskellLibrary = isLibrary;
 
     # TODO: ask why the split outputs are configurable at all?
     # TODO: include tests for split if possible
@@ -430,7 +448,7 @@ stdenv.mkDerivation ({
       done
       popd
     '';
-    allTestsInClosure = builtins.concatLists ( (map (dep: if dep ? testrun then [ dep.testrun ] else []) drv.getBuildInputs.haskellBuildInputs) ++ [ [ drv.testrun ] ]);
+    allTestsInClosure = builtins.concatLists ( (map (dep: if dep ? testrun then [ dep.testrun ] else []) drv.getBuildInputs.haskellBuildInputsRecursive) ++ [ [ drv.testrun ] ]);
   };
 
   meta = { inherit homepage license platforms; }
