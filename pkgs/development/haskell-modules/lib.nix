@@ -260,7 +260,7 @@ rec {
      the cabal file are actually used.
 
      The first attrset argument can be used to configure the strictness
-     of this check and a list of ignored package names that would otherwise 
+     of this check and a list of ignored package names that would otherwise
      cause false alarms.
    */
   checkUnusedPackages =
@@ -291,6 +291,9 @@ rec {
    */
   overrideSrc = drv: { src, version ? drv.version }:
     overrideCabal drv (_: { inherit src version; editedCabalFile = null; });
+
+  # Get all of the build inputs of a haskell package, divided by category.
+  getBuildInputs = p: p.getBuildInputs;
 
   # Extract the haskell build inputs of a haskell package.
   # This is useful to build environments for developing on that
@@ -375,5 +378,23 @@ rec {
         inherit propagatedBuildInputs otherBuildInputs
           allPkgconfigDepends;
       };
+  # Utility to convert a directory full of `cabal2nix`-generated files into a
+  # package override set
+  #
+  # packagesFromDirectory : { directory : Directory, ... } -> HaskellPackageOverrideSet
+  packagesFromDirectory =
+    { directory, ... }:
 
+    self: super:
+      let
+        haskellPaths = builtins.attrNames (builtins.readDir directory);
+
+        toKeyVal = file: {
+          name  = builtins.replaceStrings [ ".nix" ] [ "" ] file;
+
+          value = self.callPackage (directory + "/${file}") { };
+        };
+
+      in
+        builtins.listToAttrs (map toKeyVal haskellPaths);
 }
