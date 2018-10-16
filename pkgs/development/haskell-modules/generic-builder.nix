@@ -276,7 +276,7 @@ stdenv.mkDerivation ({
 
     echo setupCompileFlags: $setupCompileFlags
     ${nativeGhcCommand} $setupCompileFlags --make -o Setup -odir $TMPDIR -hidir $TMPDIR $i
-    ${optionalString splitCheck "${nativeGhcCommand} $setupCompileFlags ${./ListTests.hs} -o ListTests"}
+    ${optionalString splitCheck "${nativeGhcCommand} $setupCompileFlags ${./ListTests.hs} -o ListTests -odir $TMPDIR -hidir $TMPDIR"}
 
     runHook postCompileBuildDriver
   '';
