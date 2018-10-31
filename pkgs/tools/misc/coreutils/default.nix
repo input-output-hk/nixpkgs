@@ -9,7 +9,7 @@
 
 assert aclSupport -> acl != null;
 assert selinuxSupport -> libselinux != null && libsepol != null;
-assert hostPlatform.libc != "msvcrt";
+assert stdenv.hostPlatform.libc != "msvcrt";
 
 with lib;
 
