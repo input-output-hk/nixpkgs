@@ -8,7 +8,7 @@ with lib.trivial;
 with lib.strings;
 let
 
-  inherit (lib.modules) mergeDefinitions filterOverrides;
+  inherit (lib.modules) mergeDefinitions;
   outer_types =
 rec {
   isType = type: x: (x._type or "") == type;
@@ -192,7 +192,10 @@ rec {
     # separator between the values).
     separatedString = sep: mkOptionType rec {
       name = "separatedString";
-      description = "string";
+      description = if sep == ""
+        then "Concatenated string" # for types.string.
+        else "strings concatenated with ${builtins.toJSON sep}"
+      ;
       check = isString;
       merge = loc: defs: concatStringsSep sep (getValues defs);
       functor = (defaultFunctor name) // {
@@ -309,7 +312,6 @@ rec {
               }
           else
             def;
-        listOnly = listOf elemType;
         attrOnly = attrsOf elemType;
       in mkOptionType rec {
         name = "loaOf";

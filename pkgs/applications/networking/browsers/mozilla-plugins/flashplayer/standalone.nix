@@ -47,27 +47,21 @@
 , debug ? false
 }:
 
-let
-  arch =
-    if stdenv.system == "x86_64-linux" then
-      "x86_64"
-    else throw "Flash Player is not supported on this platform";
-in
 stdenv.mkDerivation rec {
   name = "flashplayer-standalone-${version}";
-  version = "30.0.0.113";
+  version = "31.0.0.122";
 
   src = fetchurl {
     url =
       if debug then
-        "https://fpdownload.macromedia.com/pub/flashplayer/updaters/30/flash_player_sa_linux_debug.x86_64.tar.gz"
+        "https://fpdownload.macromedia.com/pub/flashplayer/updaters/31/flash_player_sa_linux_debug.x86_64.tar.gz"
       else
-        "https://fpdownload.macromedia.com/pub/flashplayer/updaters/30/flash_player_sa_linux.x86_64.tar.gz";
+        "https://fpdownload.macromedia.com/pub/flashplayer/updaters/31/flash_player_sa_linux.x86_64.tar.gz";
     sha256 =
       if debug then
-        "0vdzmk9l04jq9mfkdddsqrga7ndikq910indl7wa3vndghrahmn0"
+        "1psd49bxn6w6kgcjhml44g5wb4za18m8apas8qyly4xcapdylias"
       else
-        "10rm48i3h6x1dygjivv2mvd0jq6n40j5c2ik090s7i0ily5z97m8";
+        "0g3h31pdxw91r3067zrkgyziwl18i5kidwx83y13ff4d17v999ss";
   };
 
   nativeBuildInputs = [ unzip ];

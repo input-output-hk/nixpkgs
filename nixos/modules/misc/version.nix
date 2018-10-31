@@ -5,45 +5,42 @@ with lib;
 let
   cfg = config.system.nixos;
 
-  revisionFile = "${toString pkgs.path}/.git-revision";
   gitRepo      = "${toString pkgs.path}/.git";
   gitCommitId  = lib.substring 0 7 (commitIdFromGitRepo gitRepo);
 in
 
 {
 
-  options.system.nixos = {
+  options.system = {
 
-    version = mkOption {
+    nixos.version = mkOption {
       internal = true;
       type = types.str;
       description = "The full NixOS version (e.g. <literal>16.03.1160.f2d4ee1</literal>).";
     };
 
-    release = mkOption {
+    nixos.release = mkOption {
       readOnly = true;
       type = types.str;
       default = trivial.release;
       description = "The NixOS release (e.g. <literal>16.03</literal>).";
     };
 
-    versionSuffix = mkOption {
+    nixos.versionSuffix = mkOption {
       internal = true;
       type = types.str;
       default = trivial.versionSuffix;
       description = "The NixOS version suffix (e.g. <literal>1160.f2d4ee1</literal>).";
     };
 
-    revision = mkOption {
+    nixos.revision = mkOption {
       internal = true;
       type = types.str;
-      default = if pathIsDirectory gitRepo then commitIdFromGitRepo gitRepo
-                else if pathExists revisionFile then fileContents revisionFile
-                else "master";
+      default = lib.trivial.revisionWithDefault "master";
       description = "The Git revision from which this NixOS configuration was built.";
     };
 
-    codeName = mkOption {
+    nixos.codeName = mkOption {
       readOnly = true;
       type = types.str;
       description = "The NixOS release code name (e.g. <literal>Emu</literal>).";
@@ -68,16 +65,13 @@ in
     defaultChannel = mkOption {
       internal = true;
       type = types.str;
-      default = https://nixos.org/channels/nixos-unstable;
+      default = https://nixos.org/channels/nixos-18.09;
       description = "Default NixOS channel to which the root user is subscribed.";
     };
 
   };
 
   config = {
-
-    warnings = lib.optional (options.system.nixos.stateVersion.highestPrio > 1000)
-      "You don't have `system.nixos.stateVersion` explicitly set. Expect things to break.";
 
     system.nixos = {
       # These defaults are set here rather than up there so that

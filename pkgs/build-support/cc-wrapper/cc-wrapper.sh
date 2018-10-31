@@ -126,7 +126,7 @@ fi
 
 if [[ "$isCpp" = 1 ]]; then
     if [[ "$cppInclude" = 1 ]]; then
-        NIX_@infixSalt@_CFLAGS_COMPILE+=" ${NIX_@infixSalt@_CXXSTDLIB_COMPILE-@default_cxx_stdlib_compile@}"
+        NIX_@infixSalt@_CFLAGS_COMPILE+=" ${NIX_@infixSalt@_CXXSTDLIB_COMPILE:-@default_cxx_stdlib_compile@}"
     fi
     NIX_@infixSalt@_CFLAGS_LINK+=" $NIX_@infixSalt@_CXXSTDLIB_LINK"
 fi
@@ -180,7 +180,18 @@ fi
 
 PATH="$path_backup"
 # Old bash workaround, see above.
-exec @prog@ \
-    ${extraBefore+"${extraBefore[@]}"} \
-    ${params+"${params[@]}"} \
-    ${extraAfter+"${extraAfter[@]}"}
+
+if (( "${NIX_CC_USE_RESPONSE_FILE:-@use_response_file_by_default@}" >= 1 )); then
+    RESPONSE_FILE=$(mktemp)
+    printf "%q\n" \
+       ${extraBefore+"${extraBefore[@]}"} \
+       ${params+"${params[@]}"} \
+       ${extraAfter+"${extraAfter[@]}"} \
+       > "${RESPONSE_FILE}"
+    exec @prog@ "@${RESPONSE_FILE}"
+else
+    exec @prog@ \
+       ${extraBefore+"${extraBefore[@]}"} \
+       ${params+"${params[@]}"} \
+       ${extraAfter+"${extraAfter[@]}"}
+fi

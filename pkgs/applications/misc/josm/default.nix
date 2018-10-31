@@ -1,12 +1,12 @@
-{ fetchurl, stdenv, makeDesktopItem, makeWrapper, unzip, bash, jre10 }:
+{ fetchurl, stdenv, makeDesktopItem, makeWrapper, unzip, jre10 }:
 
 stdenv.mkDerivation rec {
   name = "josm-${version}";
-  version = "13996";
+  version = "14066";
 
   src = fetchurl {
     url = "https://josm.openstreetmap.de/download/josm-snapshot-${version}.jar";
-    sha256 = "1j98wxw84f5rf3finr38bkr1sh9ckah8pmhmxyhmcw2rxf1mv9bf";
+    sha256 = "06mhaz5vr19ydqc5irhgcbl0s8fifwvaq60iz2nsnlxb1pw89xia";
   };
 
   buildInputs = [ jre10 makeWrapper ];

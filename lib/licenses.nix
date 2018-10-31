@@ -143,6 +143,12 @@ lib.mapAttrs (n: v: v // { shortName = n; }) rec {
     free = false;
   };
 
+  cc-by-nc-40 = spdx {
+    spdxId = "CC-BY-NC-4.0";
+    fullName = "Creative Commons Attribution Non Commercial 4.0 International";
+    free = false;
+  };
+
   cc-by-nd-30 = spdx {
     spdxId = "CC-BY-ND-3.0";
     fullName = "Creative Commons Attribution-No Derivative Works v3.00";
@@ -204,6 +210,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) rec {
     fullName = "Common Public License 1.0";
   };
 
+  curl = {
+    fullName = "MIT/X11 derivate";
+    url = "https://curl.haxx.se/docs/copyright.html";
+  };
+
   doc = spdx {
     spdxId = "DOC";
     fullName = "DOC License";
@@ -223,6 +234,12 @@ lib.mapAttrs (n: v: v // { shortName = n; }) rec {
   efl20 = spdx {
     spdxId = "EFL-2.0";
     fullName = "Eiffel Forum License v2.0";
+  };
+
+  elastic = {
+    fullName = "ELASTIC LICENSE";
+    url = https://github.com/elastic/elasticsearch/blob/master/licenses/ELASTIC-LICENSE.txt;
+    free = false;
   };
 
   epl10 = spdx {
@@ -336,6 +353,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) rec {
   ijg = spdx {
     spdxId = "IJG";
     fullName = "Independent JPEG Group License";
+  };
+
+  imagemagick = spdx {
+    fullName = "ImageMagick License";
+    spdxId = "imagemagick";
   };
 
   inria-compcert = {
@@ -601,6 +623,12 @@ lib.mapAttrs (n: v: v // { shortName = n; }) rec {
     fullName = "Vim License";
   };
 
+  virtualbox-puel = {
+    fullName = "Oracle VM VirtualBox Extension Pack Personal Use and Evaluation License (PUEL)";
+    url = "https://www.virtualbox.org/wiki/VirtualBox_PUEL";
+    free = false;
+  };
+
   vsl10 = spdx {
     spdxId = "VSL-1.0";
     fullName = "Vovida Software License v1.0";
@@ -629,6 +657,11 @@ lib.mapAttrs (n: v: v // { shortName = n; }) rec {
   wxWindows = spdx {
     spdxId = "WXwindows";
     fullName = "wxWindows Library Licence, Version 3.1";
+  };
+
+  xfig = {
+    fullName = "xfig";
+    url = "http://mcj.sourceforge.net/authors.html#xfig";
   };
 
   zlib = spdx {

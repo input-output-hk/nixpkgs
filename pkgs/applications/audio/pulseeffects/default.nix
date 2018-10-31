@@ -3,6 +3,7 @@
 , meson
 , ninja
 , pkgconfig
+, itstool
 , libxml2
 , desktop-file-utils
 , wrapGAppsHook
@@ -18,11 +19,17 @@
 , sord
 , sratom
 , libbs2b
+, libsamplerate
+, libsndfile
+, libebur128
 , boost
+, fftwFloat
 , calf
+, zita-convolver
 , zam-plugins
 , rubberband
 , mda_lv2
+, hicolor-icon-theme
 }:
 
 let
@@ -36,13 +43,13 @@ let
   ];
 in stdenv.mkDerivation rec {
   name = "pulseeffects-${version}";
-  version = "4.1.3";
+  version = "4.3.4";
 
   src = fetchFromGitHub {
     owner = "wwmm";
     repo = "pulseeffects";
     rev = "v${version}";
-    sha256 = "1f89msg8hzaf1pa9w3gaifb88dm0ca2wd81jlz3vr98hm7kxd85k";
+    sha256 = "0gyyqxfmmp6hbwc10i48sxrgdxansm3vsbwgc6rh89clxwcnfiml";
   };
 
   nativeBuildInputs = [
@@ -50,6 +57,7 @@ in stdenv.mkDerivation rec {
     ninja
     pkgconfig
     libxml2
+    itstool
     desktop-file-utils
     wrapGAppsHook
   ];
@@ -61,11 +69,18 @@ in stdenv.mkDerivation rec {
     gtk3
     gtkmm3
     gst_all_1.gstreamer
+    gst_all_1.gst-plugins-base
     gst_all_1.gst-plugins-good
     gst_all_1.gst-plugins-bad
     lilv lv2 serd sord sratom
     libbs2b
+    libebur128
+    libsamplerate
+    libsndfile
     boost
+    fftwFloat
+    zita-convolver
+    hicolor-icon-theme
   ];
 
   postPatch = ''
@@ -74,6 +89,8 @@ in stdenv.mkDerivation rec {
   '';
 
   preFixup = ''
+    addToSearchPath GST_PLUGIN_SYSTEM_PATH_1_0 $out/lib/gstreamer-1.0
+
     gappsWrapperArgs+=(
       --set LV2_PATH "${stdenv.lib.makeSearchPath "lib/lv2" lv2Plugins}"
       --set LADSPA_PATH "${stdenv.lib.makeSearchPath "lib/ladspa" ladspaPlugins}"

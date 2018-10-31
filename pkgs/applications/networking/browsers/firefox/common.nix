@@ -8,15 +8,16 @@
 , freetype, fontconfig, file, nspr, nss, libnotify
 , yasm, libGLU_combined, sqlite, unzip, makeWrapper
 , hunspell, libevent, libstartup_notification, libvpx
-, cairo, icu, libpng, jemalloc, glib
+, icu, libpng, jemalloc, glib
 , autoconf213, which, gnused, cargo, rustc, llvmPackages
+, rust-cbindgen, nodejs, rust_1_29
 , debugBuild ? false
 
 ### optionals
 
 ## optional libraries
 
-, alsaSupport ? true, alsaLib
+, alsaSupport ? stdenv.isLinux, alsaLib
 , pulseaudioSupport ? true, libpulseaudio
 , ffmpegSupport ? true, gstreamer, gst-plugins-base
 , gtk3Support ? !isTorBrowserLike, gtk2, gtk3, wrapGAppsHook
@@ -38,6 +39,10 @@
 
 , safeBrowsingSupport ? false
 , drmSupport ? false
+
+# macOS dependencies
+, xcbuild, CoreMedia, ExceptionHandling, Kerberos, AVFoundation, MediaToolbox
+, CoreLocation, Foundation, AddressBook, libobjc, cups, rsync
 
 ## other
 
@@ -66,7 +71,14 @@ assert stdenv.cc.libc or null != null;
 
 let
   flag = tf: x: [(if tf then "--enable-${x}" else "--disable-${x}")];
-  gcc = if stdenv.cc.isGNU then stdenv.cc.cc else stdenv.cc.cc.gcc;
+
+  default-toolkit = if stdenv.isDarwin then "cairo-cocoa"
+                    else "cairo-gtk${if gtk3Support then "3" else "2"}";
+
+  execdir = if stdenv.isDarwin
+            then "/Applications/${browserName}.app/Contents/MacOS"
+            else "/bin";
+  browserName = if stdenv.isDarwin then "Firefox" else "firefox";
 in
 
 stdenv.mkDerivation (rec {
@@ -76,7 +88,7 @@ stdenv.mkDerivation (rec {
 
   buildInputs = [
     gtk2 perl zip libIDL libjpeg zlib bzip2
-    dbus dbus-glib pango freetype fontconfig xorg.libXi
+    dbus dbus-glib pango freetype fontconfig xorg.libXi xorg.libXcursor
     xorg.libX11 xorg.libXrender xorg.libXft xorg.libXt file
     nspr libnotify xorg.pixman yasm libGLU_combined
     xorg.libXScrnSaver xorg.scrnsaverproto
@@ -90,13 +102,36 @@ stdenv.mkDerivation (rec {
   ++ lib.optional  pulseaudioSupport libpulseaudio # only headers are needed
   ++ lib.optionals ffmpegSupport [ gstreamer gst-plugins-base ]
   ++ lib.optional  gtk3Support gtk3
-  ++ lib.optional  gssSupport kerberos;
+  ++ lib.optional  gssSupport kerberos
+  ++ lib.optionals stdenv.isDarwin [ CoreMedia ExceptionHandling Kerberos
+                                     AVFoundation MediaToolbox CoreLocation
+                                     Foundation libobjc AddressBook cups ];
 
-  NIX_CFLAGS_COMPILE = "-I${nspr.dev}/include/nspr -I${nss.dev}/include/nss -I${glib.dev}/include/gio-unix-2.0";
+  NIX_CFLAGS_COMPILE = [
+    "-I${glib.dev}/include/gio-unix-2.0"
+  ]
+  ++ lib.optionals (!isTorBrowserLike) [
+    "-I${nss.dev}/include/nss"
+  ]
+  ++ lib.optional stdenv.isDarwin [
+    "-isystem ${llvmPackages.libcxx}/include/c++/v1"
+    "-DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_10"
+  ];
+
+  postPatch = lib.optionalString stdenv.isDarwin ''
+    substituteInPlace js/src/jsmath.cpp --replace 'defined(HAVE___SINCOS)' 0
+  '' + lib.optionalString (lib.versionAtLeast version "63.0" && !isTorBrowserLike) ''
+    substituteInPlace third_party/prio/prio/rand.c --replace 'nspr/prinit.h' 'prinit.h'
+  '';
 
   nativeBuildInputs =
-    [ autoconf213 which gnused pkgconfig perl python2 cargo rustc ]
-    ++ lib.optional gtk3Support wrapGAppsHook ++ extraNativeBuildInputs;
+    [ autoconf213 which gnused pkgconfig perl python2 ]
+    ++ (if (lib.versionAtLeast version "63") then [
+      rust-cbindgen nodejs rust_1_29.rustc rust_1_29.cargo
+    ] else [ cargo rustc ])
+    ++ lib.optional gtk3Support wrapGAppsHook
+    ++ lib.optionals stdenv.isDarwin [ xcbuild rsync ]
+    ++ extraNativeBuildInputs;
 
   preConfigure = ''
     # remove distributed configuration files
@@ -110,11 +145,23 @@ stdenv.mkDerivation (rec {
   '' else ''
     make -f client.mk configure-files
     configureScript="$(realpath ./configure)"
-  '') + ''
-    cxxLib=$( echo -n ${gcc}/include/c++/* )
-    archLib=$cxxLib/$( ${gcc}/bin/gcc -dumpmachine )
+  '') + lib.optionalString (!isTorBrowserLike && lib.versionAtLeast version "53") ''
+    export MOZCONFIG=$(pwd)/mozconfig
 
-    test -f layout/style/ServoBindings.toml && sed -i -e '/"-DRUST_BINDGEN"/ a , "-cxx-isystem", "'$cxxLib'", "-isystem", "'$archLib'"' layout/style/ServoBindings.toml
+    # Set C flags for Rust's bindgen program. Unlike ordinary C
+    # compilation, bindgen does not invoke $CC directly. Instead it
+    # uses LLVM's libclang. To make sure all necessary flags are
+    # included we need to look in a few places.
+    # TODO: generalize this process for other use-cases.
+
+    BINDGEN_CFLAGS="$(< ${stdenv.cc}/nix-support/libc-cflags) \
+      $(< ${stdenv.cc}/nix-support/cc-cflags) \
+      ${stdenv.cc.default_cxx_stdlib_compile} \
+      ${lib.optionalString stdenv.cc.isClang "-idirafter ${stdenv.cc.cc}/lib/clang/${lib.getVersion stdenv.cc.cc}/include"} \
+      ${lib.optionalString stdenv.cc.isGNU "-isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc} -isystem ${stdenv.cc.cc}/include/c++/${lib.getVersion stdenv.cc.cc}/$(cc -dumpmachine)"} \
+      $NIX_CFLAGS_COMPILE"
+
+    echo "ac_add_options BINDGEN_CFLAGS='$BINDGEN_CFLAGS'" >> $MOZCONFIG
   '' + lib.optionalString googleAPISupport ''
     # Google API key used by Chromium and Firefox.
     # Note: These are for NixOS/nixpkgs use ONLY. For your own distribution,
@@ -146,11 +193,11 @@ stdenv.mkDerivation (rec {
     "--enable-jemalloc"
     "--disable-maintenance-service"
     "--disable-gconf"
-    "--enable-default-toolkit=cairo-gtk${if gtk3Support then "3" else "2"}"
+    "--enable-default-toolkit=${default-toolkit}"
   ]
+  ++ lib.optional (stdenv.isDarwin && lib.versionAtLeast version "61") "--disable-xcode-checks"
   ++ lib.optional (lib.versionOlder version "61") "--enable-system-hunspell"
-  ++ lib.optionals (lib.versionAtLeast version "56" && !stdenv.hostPlatform.isi686) [
-    # on i686-linux: --with-libclang-path is not available in this configuration
+  ++ lib.optionals (lib.versionAtLeast version "56") [
     "--with-libclang-path=${llvmPackages.libclang}/lib"
     "--with-clang-path=${llvmPackages.clang}/bin/clang"
   ]
@@ -223,7 +270,12 @@ stdenv.mkDerivation (rec {
     paxmark m dist/bin/xpcshell
   '';
 
-  postInstall = ''
+  installPhase = if stdenv.isDarwin then ''
+    mkdir -p $out/Applications
+    cp -LR dist/Firefox.app $out/Applications
+  '' else null;
+
+  postInstall = lib.optionalString stdenv.isLinux ''
     # For grsecurity kernels
     paxmark m $out/lib/firefox*/{firefox,firefox-bin,plugin-container}
 
@@ -234,7 +286,7 @@ stdenv.mkDerivation (rec {
     gappsWrapperArgs+=(--argv0 "$out/bin/.firefox-wrapped")
   '';
 
-  postFixup = ''
+  postFixup = lib.optionalString stdenv.isLinux ''
     # Fix notifications. LibXUL uses dlopen for this, unfortunately; see #18712.
     patchelf --set-rpath "${lib.getLib libnotify
       }/lib:$(patchelf --print-rpath "$out"/lib/firefox*/libxul.so)" \
@@ -244,11 +296,10 @@ stdenv.mkDerivation (rec {
   doInstallCheck = true;
   installCheckPhase = ''
     # Some basic testing
-    "$out/bin/firefox" --version
+    "$out${execdir}/${browserName}" --version
   '';
 
   passthru = {
-    browserName = "firefox";
     inherit version updateScript;
     isFirefox3Like = true;
     inherit isTorBrowserLike;
@@ -256,6 +307,8 @@ stdenv.mkDerivation (rec {
     inherit nspr;
     inherit ffmpegSupport;
     inherit gssSupport;
+    inherit execdir;
+    inherit browserName;
   } // lib.optionalAttrs gtk3Support { inherit gtk3; };
 
 } // overrides)

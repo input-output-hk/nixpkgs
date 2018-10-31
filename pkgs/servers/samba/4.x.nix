@@ -1,9 +1,9 @@
 { lib, stdenv, fetchurl, python, pkgconfig, perl, libxslt, docbook_xsl
 , fetchpatch
-, docbook_xml_dtd_42, docbook_xml_dtd_45, readline, talloc
+, docbook_xml_dtd_42, readline, talloc
 , popt, iniparser, libbsd, libarchive, libiconv, gettext
 , krb5Full, zlib, openldap, cups, pam, avahi, acl, libaio, fam, libceph, glusterfs
-, gnutls, libgcrypt, libgpgerror
+, gnutls
 , ncurses, libunwind, libibverbs, librdmacm, systemd
 
 , enableInfiniband ? false
@@ -22,11 +22,11 @@ with lib;
 
 stdenv.mkDerivation rec {
   name = "samba-${version}";
-  version = "4.7.6";
+  version = "4.7.10";
 
   src = fetchurl {
     url = "mirror://samba/pub/samba/stable/${name}.tar.gz";
-    sha256 = "0vkxqp3wh7bpn1fd45lznmrpn2ma1fq75yq28vi08rggr07y7v8y";
+    sha256 = "0w5y6a7kiw5ap7hd84yglzk7cjax6lxlszd0wz1sxnmqx4a6hn9l";
   };
 
   outputs = [ "out" "dev" "man" ];

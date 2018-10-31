@@ -1,4 +1,4 @@
-{ lib, targetPlatform, ghc, llvmPackages, packages, symlinkJoin, makeWrapper
+{ lib, stdenv, ghc, llvmPackages, packages, symlinkJoin, makeWrapper
 , withLLVM ? false
 , postBuild ? ""
 , ghcLibdir ? null # only used by ghcjs, when resolving plugins
@@ -48,7 +48,7 @@ let
   # https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/codegens.html#llvm-code-generator-fllvm
   llvm          = lib.makeBinPath
                   ([ llvmPackages.llvm ]
-                   ++ lib.optional targetPlatform.isDarwin llvmPackages.clang);
+                   ++ lib.optional stdenv.targetPlatform.isDarwin llvmPackages.clang);
 in
 if paths == [] && !withLLVM then ghc else
 symlinkJoin {
@@ -106,6 +106,7 @@ symlinkJoin {
     fi
 
   '' + ''
+
     ${lib.optionalString hasLibraries "$out/bin/${ghcCommand}-pkg recache"}
     ${# ghcjs will read the ghc_libdir file when resolving plugins.
       lib.optionalString (isGhcjs && ghcLibdir != null) ''

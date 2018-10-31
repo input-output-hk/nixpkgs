@@ -73,7 +73,7 @@ let
       description = ''
         Specify a filter for iptables to use when
         <option>services.prometheus.exporters.${name}.openFirewall</option>
-        is true. It is used as `ip46tables -I INPUT <option>firewallFilter</option> -j ACCEPT`.
+        is true. It is used as `ip46tables -I nixos-fw <option>firewallFilter</option> -j nixos-fw-accept`.
       '';
     };
     user = mkOption {
@@ -94,7 +94,7 @@ let
     };
   });
 
-  mkSubModule = { name, port, extraOpts, serviceOpts }: {
+  mkSubModule = { name, port, extraOpts, ... }: {
     ${name} = mkOption {
       type = types.submodule {
         options = (mkExporterOpts {
@@ -116,21 +116,20 @@ let
 
   mkExporterConf = { name, conf, serviceOpts }:
     mkIf conf.enable {
-      networking.firewall.extraCommands = mkIf conf.openFirewall ''
-        ip46tables -I INPUT ${conf.firewallFilter} -j ACCEPT
-      '';
+      networking.firewall.extraCommands = mkIf conf.openFirewall (concatStrings [
+        "ip46tables -I nixos-fw ${conf.firewallFilter} "
+        "-m comment --comment ${name}-exporter -j nixos-fw-accept"
+      ]);
       systemd.services."prometheus-${name}-exporter" = mkMerge ([{
         wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
-        serviceConfig = {
-          Restart = mkDefault "always";
-          PrivateTmp = mkDefault true;
-          WorkingDirectory = mkDefault /tmp;
-        } // mkIf (!(serviceOpts.serviceConfig.DynamicUser or false)) {
-          User = conf.user;
-          Group = conf.group;
-        };
-      } serviceOpts ]);
+        serviceConfig.Restart = mkDefault "always";
+        serviceConfig.PrivateTmp = mkDefault true;
+        serviceConfig.WorkingDirectory = mkDefault /tmp;
+      } serviceOpts ] ++ optional (serviceOpts.serviceConfig.DynamicUser or false) {
+        serviceConfig.User = conf.user;
+        serviceConfig.Group = conf.group;
+      });
   };
 in
 {
@@ -171,5 +170,8 @@ in
     }) exporterOpts)
   );
 
-  meta.doc = ./exporters.xml;
+  meta = {
+    doc = ./exporters.xml;
+    maintainers = [ maintainers.willibutz ];
+  };
 }
