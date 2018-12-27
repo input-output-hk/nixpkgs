@@ -1,6 +1,7 @@
 {
   erubis = {
     source = {
+      remotes = ["https://rubygems.org"];
       sha256 = "1fj827xqjs91yqsydf0zmfyw9p4l2jz5yikg3mppz6d7fi8kyrb3";
       type = "gem";
     };
@@ -16,6 +17,7 @@
   };
   multi_json = {
     source = {
+      remotes = ["https://rubygems.org"];
       sha256 = "0q2zjfvd2ibds9g9nzf2p1b47fc1wqliwfywv5pw85w15lmy91yr";
       type = "gem";
     };
@@ -24,10 +26,10 @@
   rack = {
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0in0amn0kwvzmi8h5zg6ijrx5wpsf8h96zrfmnk1kwh2ql4sxs2q";
+      sha256 = "1g9926ln2lw12lfxm4ylq1h6nl0rafl10za3xvjzc87qvnqic87f";
       type = "gem";
     };
-    version = "1.6.10";
+    version = "1.6.11";
   };
   rack-protection = {
     dependencies = ["rack"];
@@ -50,10 +52,10 @@
     dependencies = ["ffi"];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0yfsgw5n7pkpyky6a9wkf1g9jafxb0ja7gz0qw0y14fd2jnzfh71";
+      sha256 = "1fs7hxm9g6ywv2yih83b879klhc4fs8i0p9166z795qmd77dk0a4";
       type = "gem";
     };
-    version = "0.9.10";
+    version = "0.10.0";
   };
   riemann-dash = {
     dependencies = ["erubis" "multi_json" "sass" "sinatra" "webrick"];
@@ -68,10 +70,10 @@
     dependencies = ["sass-listen"];
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "18c6prbw9wl8bqhb2435pd9s0lzarl3g7xf8pmyla28zblvwxmyh";
+      sha256 = "1phs6hnd8b95m7n5wbh5bsclmwaajd1sqlgw9fmj72bfqldbmcqa";
       type = "gem";
     };
-    version = "3.6.0";
+    version = "3.7.2";
   };
   sass-listen = {
     dependencies = ["rb-fsevent" "rb-inotify"];
@@ -94,13 +96,14 @@
   tilt = {
     source = {
       remotes = ["https://rubygems.org"];
-      sha256 = "0020mrgdf11q23hm1ddd6fv691l51vi10af00f137ilcdb2ycfra";
+      sha256 = "0ca4k0clwf0rkvy7726x4nxpjxkpv67w043i39saxgldxd97zmwz";
       type = "gem";
     };
-    version = "2.0.8";
+    version = "2.0.9";
   };
   webrick = {
     source = {
+      remotes = ["https://rubygems.org"];
       sha256 = "0s42mxihcl2bx0h9q0v2syl70qndydfkl39a06h9il17p895ya8g";
       type = "gem";
     };
