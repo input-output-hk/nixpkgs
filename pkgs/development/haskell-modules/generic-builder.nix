@@ -206,7 +206,7 @@ let
   nativeGhcCommand = "${nativeGhc.targetPrefix}ghc";
 
   buildPkgDb = ghcName: packageConfDir: ''
-    if [ -d "$p/lib/${ghcName}/package.conf.d" ]; then
+    if [ -d "$p/lib/${ghcName}/package.conf.d" ] && [ "$p" != "${ghc}" ] && [ "$p" != "${nativeGhc}" ]; then
       cp -f "$p/lib/${ghcName}/package.conf.d/"*.conf ${packageConfDir}/
       continue
     fi
