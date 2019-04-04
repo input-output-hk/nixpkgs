@@ -19,6 +19,7 @@ rec {
     isRiscV        = { cpu = { family = "riscv"; }; };
     isSparc        = { cpu = { family = "sparc"; }; };
     isWasm         = { cpu = { family = "wasm"; }; };
+    isJavaScript   = { cpu = { family = "js"; }; };
 
     is32bit        = { cpu = { bits = 32; }; };
     is64bit        = { cpu = { bits = 64; }; };
@@ -46,6 +47,8 @@ rec {
 
     isEfi          = map (family: { cpu.family = family; })
                        [ "x86" "arm" "aarch64" ];
+
+    isGhcjs        = { kernel = kernels.ghcjs; };
 
     # Deprecated after 18.03
     isArm = isAarch32;

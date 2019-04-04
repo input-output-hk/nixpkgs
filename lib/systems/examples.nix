@@ -162,4 +162,13 @@ rec {
     libc = "msvcrt"; # This distinguishes the mingw (non posix) toolchain
     platform = {};
   };
+
+  #
+  # Ghcjs
+  #
+
+  ghcjs = {
+    config = "js-unknown-ghcjs";
+    platform = {};
+  };
 }

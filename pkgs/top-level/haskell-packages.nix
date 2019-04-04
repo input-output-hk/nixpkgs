@@ -47,7 +47,7 @@ let
 in {
   lib = haskellLib;
 
-  compiler = {
+  compiler = rec {
 
     ghc7103Binary = callPackage ../development/compilers/ghc/7.10.3-binary.nix { };
     ghc821Binary = callPackage ../development/compilers/ghc/8.2.1-binary.nix { };
@@ -74,11 +74,13 @@ in {
       buildLlvmPackages = buildPackages.llvmPackages_5;
       llvmPackages = pkgs.llvmPackages_5;
     };
-    ghc844 = callPackage ../development/compilers/ghc/8.4.4.nix {
-      bootPkgs = mkBootPkgs "ghc844" "ghc821Binary";
-      buildLlvmPackages = buildPackages.llvmPackages_5;
-      llvmPackages = pkgs.llvmPackages_5;
-    };
+    ghc844 = builtins.trace pkgs.stdenv.targetPlatform.config (if pkgs.stdenv.targetPlatform.isGhcjs
+      then buildPackages.haskell.compiler.ghcjs84
+      else callPackage ../development/compilers/ghc/8.4.4.nix {
+        bootPkgs = mkBootPkgs "ghc844" "ghc821Binary";
+        buildLlvmPackages = buildPackages.llvmPackages_5;
+        llvmPackages = pkgs.llvmPackages_5;
+      });
     ghc861 = callPackage ../development/compilers/ghc/8.6.1.nix {
       bootPkgs = mkBootPkgs "ghc861" "ghc822";
       buildLlvmPackages = buildPackages.llvmPackages_6;

@@ -148,6 +148,8 @@ let
       inherit cc;
     }
 
+    // (if targetPlatform.isGhcjs then { cc = null; } else {})
+
     # Propagate any extra attributes.  For instance, we use this to
     # "lift" packages like curl from the final stdenv for Linux to
     # all-packages.nix for that platform (meaning that it has a line
