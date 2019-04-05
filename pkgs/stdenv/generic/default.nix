@@ -56,8 +56,8 @@ let
       ../../build-support/setup-hooks/move-sbin.sh
       ../../build-support/setup-hooks/move-lib64.sh
       ../../build-support/setup-hooks/set-source-date-epoch-to-latest.sh
-      cc
-    ];
+       ]
+    ++ lib.optional (!hostPlatform.isGhcjs) cc;
 
   defaultBuildInputs = extraBuildInputs;
 
@@ -147,8 +147,6 @@ let
 
       inherit cc;
     }
-
-    // (if targetPlatform.isGhcjs then { cc = null; } else {})
 
     # Propagate any extra attributes.  For instance, we use this to
     # "lift" packages like curl from the final stdenv for Linux to
