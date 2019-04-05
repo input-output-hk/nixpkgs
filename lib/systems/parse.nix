@@ -181,6 +181,7 @@ rec {
     solaris = { execFormat = elf;     families = { }; };
     windows = { execFormat = pe;      families = { }; };
     ghcjs   = { execFormat = unknown; families = { }; };
+    asterius = { execFormat = unknown; families = { }; };
   } // { # aliases
     # 'darwin' is the kernel for all of them. We choose macOS by default.
     darwin = kernels.macos;
@@ -272,6 +273,8 @@ rec {
       else if hasPrefix "netbsd" (elemAt l 2)
         then { cpu = elemAt l 0; vendor = elemAt l 1;    kernel = elemAt l 2;                }
       else if (elemAt l 2 == "ghcjs")
+        then { cpu = elemAt l 0; vendor = elemAt l 1;    kernel = elemAt l 2;                }
+      else if (elemAt l 2 == "asterius")
         then { cpu = elemAt l 0; vendor = elemAt l 1;    kernel = elemAt l 2;                }
       else throw "Target specification with 3 components is ambiguous";
     "4" =    { cpu = elemAt l 0; vendor = elemAt l 1; kernel = elemAt l 2; abi = elemAt l 3; };
