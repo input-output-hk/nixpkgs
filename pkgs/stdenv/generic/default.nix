@@ -57,8 +57,8 @@ let
       ../../build-support/setup-hooks/move-sbin.sh
       ../../build-support/setup-hooks/move-lib64.sh
       ../../build-support/setup-hooks/set-source-date-epoch-to-latest.sh
-      cc
-    ];
+       ]
+    ++ lib.optional (!hostPlatform.isGhcjs && !hostPlatform.isAsterius) cc;
 
   defaultBuildInputs = extraBuildInputs;
 

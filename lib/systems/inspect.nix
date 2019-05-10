@@ -19,7 +19,10 @@ rec {
     isMips         = { cpu = { family = "mips"; }; };
     isRiscV        = { cpu = { family = "riscv"; }; };
     isSparc        = { cpu = { family = "sparc"; }; };
+    isWasm32       = { cpu = cpuTypes.wasm32; };
+    isWasm64       = { cpu = cpuTypes.wasm64; };
     isWasm         = { cpu = { family = "wasm"; }; };
+    isJavaScript   = { cpu = { family = "js"; }; };
     isAvr          = { cpu = { family = "avr"; }; };
     isAlpha        = { cpu = { family = "alpha"; }; };
 
@@ -49,6 +52,9 @@ rec {
 
     isEfi          = map (family: { cpu.family = family; })
                        [ "x86" "arm" "aarch64" ];
+
+    isGhcjs        = { kernel = kernels.ghcjs; };
+    isAsterius     = { kernel = kernels.asterius; };
 
     # Deprecated after 18.03
     isArm = isAarch32;
