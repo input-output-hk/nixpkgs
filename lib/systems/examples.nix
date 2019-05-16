@@ -210,7 +210,7 @@ rec {
   #
 
   ghcjs = {
-    config = "js-unknown-none-ghcjs";
+    config = "js-unknown-ghcjs";
     platform = {};
   };
 
@@ -219,12 +219,12 @@ rec {
   #
 
   asterius32 = {
-    config = "wasm32-unknown-none-asterius";
+    config = "wasm32-unknown-asterius";
     platform = {};
   };
 
   asterius64 = {
-    config = "wasm64-unknown-none-asterius";
+    config = "wasm64-unknown-asterius";
     platform = {};
   };
 }
