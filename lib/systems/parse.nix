@@ -301,7 +301,9 @@ rec {
         then { cpu = elemAt l 0; vendor = elemAt l 1;    kernel = elemAt l 2;                }
       else if (elem (elemAt l 2) ["eabi" "eabihf" "elf"])
         then { cpu = elemAt l 0; vendor = "unknown"; kernel = elemAt l 1; abi = elemAt l 2; }
-      else throw "Target specification with 3 components is ambiguous";
+      else if (elemAt l 2 == "ghcjs")
+        then { cpu = elemAt l 0; vendor = "unknown"; kernel = "ghcjs"; abi = "unknown"; }
+      else throw "Target specification (${concatStringsSep "-" l}) with 3 components is ambiguous";
     "4" =    { cpu = elemAt l 0; vendor = elemAt l 1; kernel = elemAt l 2; abi = elemAt l 3; };
   }.${toString (length l)}
     or (throw "system string has invalid number of hyphen-separated components");

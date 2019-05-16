@@ -17,6 +17,7 @@
 , nodePackages
 , ghcjsDepOverrides ? (_:_:{})
 , haskell
+, ...
 }:
 
 let

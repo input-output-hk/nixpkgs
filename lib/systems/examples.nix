@@ -111,7 +111,7 @@ rec {
     config = "aarch64-none-elf";
     libc = "newlib";
   };
-  
+
   aarch64be-embedded = {
     config = "aarch64_be-none-elf";
     libc = "newlib";
@@ -121,12 +121,12 @@ rec {
     config = "powerpc-none-eabi";
     libc = "newlib";
   };
-  
+
   ppcle-embedded = {
     config = "powerpcle-none-eabi";
     libc = "newlib";
   };
-  
+
   alpha-embedded = {
     config = "alpha-elf";
     libc = "newlib";
@@ -210,7 +210,7 @@ rec {
   #
 
   ghcjs = {
-    config = "js-unknown-ghcjs";
+    config = "js-unknown-none-ghcjs";
     platform = {};
   };
 
@@ -219,12 +219,12 @@ rec {
   #
 
   asterius32 = {
-    config = "wasm32-unknown-asterius";
+    config = "wasm32-unknown-none-asterius";
     platform = {};
   };
 
   asterius64 = {
-    config = "wasm64-unknown-asterius";
+    config = "wasm64-unknown-none-asterius";
     platform = {};
   };
 }

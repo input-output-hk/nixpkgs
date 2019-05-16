@@ -91,18 +91,18 @@ in {
 
     # Use `import` because `callPackage inside`.
     ghcjs82 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc822;
+      bootPkgs = packages.ghc822;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.2/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.2/stage0.nix;
     };
     ghcjs84 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc844;
+      bootPkgs = packages.ghc844;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.4/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.4/stage0.nix;
       ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.4/dep-overrides.nix {};
     };
     ghcjs86 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc864;
+      bootPkgs = packages.ghc864;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.6/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.6/stage0.nix;
       ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.6/dep-overrides.nix {};
@@ -118,7 +118,7 @@ in {
       integerSimpleGhcNames
       (name: compiler."${name}".override { enableIntegerSimple = true; }));
   } //
-  ( if pkgs.stdenv.hostPlatform.isGhcjs
+  ( if pkgs.stdenv.targetPlatform.isGhcjs
     then {
       ghc822 = compiler.ghcjs82;
       ghc843 = compiler.ghcjs84;
@@ -130,7 +130,7 @@ in {
     }
     else {}
   ) //
-  ( if pkgs.stdenv.hostPlatform.isAsterius
+  ( if pkgs.stdenv.targetPlatform.isAsterius
     then {
       ghc822 = compiler.asterius;
       ghc843 = compiler.asterius;
