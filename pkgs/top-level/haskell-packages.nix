@@ -48,12 +48,6 @@ in {
 
   compiler = {
 
-    ghc821Binary = callPackage ../development/haskell-modules {
-      buildHaskellPackages = bh.packages.ghc821Binary;
-      ghc = bh.compiler.ghc821Binary;
-      compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.2.x.nix { };
-      packageSetConfig = bootstrapPackageSet;
-    };
     ghc822Binary = callPackage ../development/compilers/ghc/8.2.2-binary.nix { };
 
     ghc863Binary = callPackage ../development/compilers/ghc/8.6.3-binary.nix { };
@@ -64,88 +58,51 @@ in {
       buildLlvmPackages = buildPackages.llvmPackages_39;
       llvmPackages = pkgs.llvmPackages_39;
     };
-    ghc843 = callPackage ../development/haskell-modules {
-      buildHaskellPackages = bh.packages.ghc843;
-      ghc = bh.compiler.ghc843;
-      compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.4.x.nix { };
-    };
     ghc844 = callPackage ../development/compilers/ghc/8.4.4.nix {
       bootPkgs = packages.ghc822Binary;
       sphinx = buildPackages.python3Packages.sphinx_1_7_9;
       buildLlvmPackages = buildPackages.llvmPackages_5;
       llvmPackages = pkgs.llvmPackages_5;
     };
-    ghc864 = callPackage ../development/compilers/ghc/8.6.4.nix {
-      bootPkgs = packages.ghc822Binary;
-      inherit (buildPackages.python3Packages) sphinx;
-      buildLlvmPackages = buildPackages.llvmPackages_6;
-      llvmPackages = pkgs.llvmPackages_6;
-    };
     ghc862 = callPackage ../development/compilers/ghc/8.6.2.nix {
       bootPkgs = mkBootPkgs "ghc862" "ghc822";
       buildLlvmPackages = buildPackages.llvmPackages_6;
       llvmPackages = pkgs.llvmPackages_6;
     };
-    ghc863 = builtins.trace ''
-
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      ************************************ WARNING ***********************************
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-               You are using GHC 8.6.3.  This version is known to
-               be busted on windows!  See GHC issue #16057.  Make
-               sure you revert commit
-                 ghc:ed86e3b531322f74d2c2d00d7ff8662b08fabde6
-               before using GHC 8.6.3 in any form on windows.
-
-               --
-               https://ghc.haskell.org/trac/ghc/ticket/16057
-
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      ************************************ WARNING ***********************************
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      '' callPackage ../development/compilers/ghc/8.6.3.nix {
+    ghc863 = callPackage ../development/compilers/ghc/8.6.3.nix {
       bootPkgs = mkBootPkgs "ghc863" "ghc822";
       buildLlvmPackages = buildPackages.llvmPackages_6;
       llvmPackages = pkgs.llvmPackages_6;
     };
     ghc864 = callPackage ../development/compilers/ghc/8.6.4.nix {
+      inherit (buildPackages.python3Packages) sphinx;
       bootPkgs = mkBootPkgs "ghc864" "ghc822";
       buildLlvmPackages = buildPackages.llvmPackages_6;
       llvmPackages = pkgs.llvmPackages_6;
     };
     ghcHEAD = callPackage ../development/compilers/ghc/head.nix {
-      bootPkgs = mkBootPkgs "ghcHEAD" "ghc821Binary";
-      buildLlvmPackages = buildPackages.llvmPackages_5;
-      llvmPackages = pkgs.llvmPackages_5;
+      inherit (buildPackages.python3Packages) sphinx;
+      bootPkgs = mkBootPkgs "ghcHEAD" "ghc863Binary";
+      buildLlvmPackages = buildPackages.llvmPackages_6;
+      llvmPackages = pkgs.llvmPackages_6;
     };
-    ghcjs = compiler.ghcjs84;
+
+    ghcjs = compiler.ghcjs86;
+
     # Use `import` because `callPackage inside`.
-    ghcjs710 = import ../development/compilers/ghcjs/7.10 {
-      bootPkgs = buildPackages.ghc7103;
-      inherit (pkgs) cabal-install;
-      inherit (buildPackages) fetchgit fetchFromGitHub;
-    };
-    # `import` on purpose; see above.
-    ghcjs80 = import ../development/compilers/ghcjs/8.0 {
-      bootPkgs = buildPackages.ghc802;
-      inherit (pkgs) cabal-install;
-      inherit (buildPackages) fetchgit fetchFromGitHub;
-    };
     ghcjs82 = callPackage ../development/compilers/ghcjs-ng {
       bootPkgs = buildPackages.ghc822;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.2/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.2/stage0.nix;
     };
-    ghcjs = compiler.ghcjs86;
     ghcjs84 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc843;
+      bootPkgs = buildPackages.ghc844;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.4/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.4/stage0.nix;
       ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.4/dep-overrides.nix {};
     };
     ghcjs86 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = packages.ghc864;
+      bootPkgs = buildPackages.ghc864;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.6/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.6/stage0.nix;
       ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.6/dep-overrides.nix {};
@@ -163,7 +120,6 @@ in {
   } //
   ( if pkgs.stdenv.hostPlatform.isGhcjs
     then {
-      ghc802 = compiler.ghcjs80;
       ghc822 = compiler.ghcjs82;
       ghc843 = compiler.ghcjs84;
       ghc844 = compiler.ghcjs84;
@@ -176,7 +132,6 @@ in {
   ) //
   ( if pkgs.stdenv.hostPlatform.isAsterius
     then {
-      ghc802 = compiler.asterius;
       ghc822 = compiler.asterius;
       ghc843 = compiler.asterius;
       ghc844 = compiler.asterius;
@@ -215,11 +170,6 @@ in {
       buildHaskellPackages = bh.packages.ghc844;
       ghc = bh.compiler.ghc844;
       compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.4.x.nix { };
-    };
-    ghc864 = callPackage ../development/haskell-modules {
-      buildHaskellPackages = bh.packages.ghc864;
-      ghc = bh.compiler.ghc864;
-      compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.6.x.nix { };
     };
     ghc862 = callPackage ../development/haskell-modules {
       buildHaskellPackages = bh.packages.ghc862;
