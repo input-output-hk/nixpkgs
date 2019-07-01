@@ -150,7 +150,7 @@ in {
       integerSimpleGhcNames
       (name: compiler."${name}".override { enableIntegerSimple = true; }));
   } //
-  ( if pkgs.stdenv.hostPlatform.isGhcjs
+  ( if pkgs.stdenv.targetPlatform.isGhcjs
     then {
       ghc802 = compiler.ghcjs80;
       ghc822 = compiler.ghcjs82;
@@ -160,6 +160,7 @@ in {
       ghc862 = compiler.ghcjs86;
       ghc863 = compiler.ghcjs86;
       ghc864 = compiler.ghcjs86;
+      ghc865 = compiler.ghcjs86;
     }
     else {}
   ) //
@@ -173,6 +174,7 @@ in {
       ghc862 = compiler.asterius;
       ghc863 = compiler.asterius;
       ghc864 = compiler.asterius;
+      ghc865 = compiler.asterius;
     }
     else {}
   );

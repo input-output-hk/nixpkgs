@@ -9566,7 +9566,7 @@ with pkgs;
     else if name == "msvcrt" then targetPackages.windows.mingw_w64 or windows.mingw_w64
     else if stdenv.targetPlatform.useiOSPrebuilt then targetPackages.darwin.iosSdkPkgs.libraries
     else if name == "libSystem" then targetPackages.darwin.xcode
-    else throw "Unknown libc";
+    else throw "Unknown libc for ${name}";
 
   libcCross = assert stdenv.targetPlatform != stdenv.buildPlatform; libcCrossChooser stdenv.targetPlatform.libc;
 

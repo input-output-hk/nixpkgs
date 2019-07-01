@@ -34,6 +34,8 @@
   ghcFlavour ? stdenv.lib.optionalString (stdenv.targetPlatform != stdenv.hostPlatform) "perf-cross"
 }:
 
+assert !stdenv.targetPlatform.isGhcjs;
+
 assert !enableIntegerSimple -> gmp != null;
 
 let
