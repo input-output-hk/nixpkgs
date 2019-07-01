@@ -115,10 +115,10 @@ in {
       buildLlvmPackages = buildPackages.llvmPackages_5;
       llvmPackages = pkgs.llvmPackages_5;
     };
-    ghcjs = compiler.ghcjs84;
+    ghcjs = compiler.ghcjs86;
     # Use `import` because `callPackage inside`.
     ghcjs710 = import ../development/compilers/ghcjs/7.10 {
-      bootPkgs = buildPackages.ghc7103;
+      bootPkgs = buildPackages.haskell.packages.ghc7103;
       inherit (pkgs) cabal-install;
       inherit (buildPackages) fetchgit fetchFromGitHub;
     };
@@ -129,15 +129,22 @@ in {
       inherit (buildPackages) fetchgit fetchFromGitHub;
     };
     ghcjs82 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc822;
+      bootPkgs = buildPackages.haskell.packages.ghc822;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.2/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.2/stage0.nix;
     };
     ghcjs84 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc843;
+      bootPkgs = buildPackages.haskell.packages.ghc843;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.4/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.4/stage0.nix;
       ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.4/dep-overrides.nix {};
+    };
+
+    ghcjs86 = callPackage ../development/compilers/ghcjs-ng {
+      bootPkgs = buildPackages.haskell.packages.ghc865;
+      ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.6/git.json;
+      stage0 = ../development/compilers/ghcjs-ng/8.6/stage0.nix;
+      ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.6/dep-overrides.nix {};
     };
 
     # The integer-simple attribute set contains all the GHC compilers
