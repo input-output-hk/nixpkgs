@@ -33,7 +33,7 @@ rec {
         else if final.isAndroid             then "bionic"
         else if final.isLinux /* default */ then "glibc"
         # TODO(@Ericson2314) think more about other operating systems
-        else                                     "native/impure";
+        else                                     builtins.trace "setting libc = native/impure for ${final.config}" "native/impure";
       extensions = {
         sharedLibrary =
           /**/ if final.isDarwin  then ".dylib"

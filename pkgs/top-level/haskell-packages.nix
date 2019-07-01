@@ -115,10 +115,10 @@ in {
       buildLlvmPackages = buildPackages.llvmPackages_5;
       llvmPackages = pkgs.llvmPackages_5;
     };
-    ghcjs = compiler.ghcjs84;
+    ghcjs = compiler.ghcjs86;
     # Use `import` because `callPackage inside`.
     ghcjs710 = import ../development/compilers/ghcjs/7.10 {
-      bootPkgs = buildPackages.ghc7103;
+      bootPkgs = buildPackages.haskell.packages.ghc7103;
       inherit (pkgs) cabal-install;
       inherit (buildPackages) fetchgit fetchFromGitHub;
     };
@@ -129,15 +129,22 @@ in {
       inherit (buildPackages) fetchgit fetchFromGitHub;
     };
     ghcjs82 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc822;
+      bootPkgs = buildPackages.haskell.packages.ghc822;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.2/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.2/stage0.nix;
     };
     ghcjs84 = callPackage ../development/compilers/ghcjs-ng {
-      bootPkgs = buildPackages.ghc843;
+      bootPkgs = buildPackages.haskell.packages.ghc843;
       ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.4/git.json;
       stage0 = ../development/compilers/ghcjs-ng/8.4/stage0.nix;
       ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.4/dep-overrides.nix {};
+    };
+
+    ghcjs86 = callPackage ../development/compilers/ghcjs-ng {
+      bootPkgs = buildPackages.haskell.packages.ghc865;
+      ghcjsSrcJson = ../development/compilers/ghcjs-ng/8.6/git.json;
+      stage0 = ../development/compilers/ghcjs-ng/8.6/stage0.nix;
+      ghcjsDepOverrides = callPackage ../development/compilers/ghcjs-ng/8.6/dep-overrides.nix {};
     };
 
     # The integer-simple attribute set contains all the GHC compilers
@@ -150,7 +157,7 @@ in {
       integerSimpleGhcNames
       (name: compiler."${name}".override { enableIntegerSimple = true; }));
   } //
-  ( if pkgs.stdenv.hostPlatform.isGhcjs
+  ( if pkgs.stdenv.targetPlatform.isGhcjs
     then {
       ghc802 = compiler.ghcjs80;
       ghc822 = compiler.ghcjs82;
@@ -160,6 +167,7 @@ in {
       ghc862 = compiler.ghcjs86;
       ghc863 = compiler.ghcjs86;
       ghc864 = compiler.ghcjs86;
+      ghc865 = compiler.ghcjs86;
     }
     else {}
   ) //
@@ -173,6 +181,7 @@ in {
       ghc862 = compiler.asterius;
       ghc863 = compiler.asterius;
       ghc864 = compiler.asterius;
+      ghc865 = compiler.asterius;
     }
     else {}
   );
