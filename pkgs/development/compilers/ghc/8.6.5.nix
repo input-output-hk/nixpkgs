@@ -82,12 +82,12 @@ let
 
 in
 stdenv.mkDerivation (rec {
-  version = "8.6.4";
+  version = "8.6.5";
   name = "${targetPrefix}ghc-${version}";
 
   src = fetchurl {
     url = "https://downloads.haskell.org/~ghc/${version}/ghc-${version}-src.tar.xz";
-    sha256 = "0fihs1sr0hpk67dn9cmrsav13kkcp9hz8ggdqcrs80rj8vj0fpav";
+    sha256 = "0qg3zsmbk4rkwkc3jpas3zs74qaxmw4sp4v1mhsbj0a0dzls2jjd";
   };
 
   enableParallelBuilding = true;
@@ -98,6 +98,13 @@ stdenv.mkDerivation (rec {
     url = "http://tarballs.nixos.org/sha256/${sha256}";
     name = "D5123.diff";
     sha256 = "0nhqwdamf2y4gbwqxcgjxs0kqx23w9gv5kj0zv6450dq19rji82n";
+  })
+  (fetchpatch rec { # https://github.com/haskell/haddock/issues/900
+   url = "https://patch-diff.githubusercontent.com/raw/haskell/haddock/pull/983.diff";
+    name = "loadpluginsinmodules.diff";
+    sha256 = "0bvvv0zsfq2581zsir97zfkggc1kkircbbajc2fz3b169ycpbha1";
+    extraPrefix = "utils/haddock/";
+    stripLen = 1;
   })];
 
   postPatch = "patchShebangs .";

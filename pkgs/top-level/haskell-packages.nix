@@ -80,6 +80,12 @@ in {
       buildLlvmPackages = buildPackages.llvmPackages_6;
       llvmPackages = pkgs.llvmPackages_6;
     };
+    ghc865 = callPackage ../development/compilers/ghc/8.6.5.nix {
+      inherit (buildPackages.python3Packages) sphinx;
+      bootPkgs = mkBootPkgs "ghc865" "ghc822";
+      buildLlvmPackages = buildPackages.llvmPackages_6;
+      llvmPackages = pkgs.llvmPackages_6;
+    };
     ghcHEAD = callPackage ../development/compilers/ghc/head.nix {
       inherit (buildPackages.python3Packages) sphinx;
       bootPkgs = mkBootPkgs "ghcHEAD" "ghc863Binary";
@@ -127,6 +133,7 @@ in {
       ghc862 = compiler.ghcjs86;
       ghc863 = compiler.ghcjs86;
       ghc864 = compiler.ghcjs86;
+      ghc865 = compiler.ghcjs86;
     }
     else {}
   ) //
@@ -139,6 +146,7 @@ in {
       ghc862 = compiler.asterius;
       ghc863 = compiler.asterius;
       ghc864 = compiler.asterius;
+      ghc865 = compiler.asterius;
     }
     else {}
   );
@@ -184,6 +192,11 @@ in {
     ghc864 = callPackage ../development/haskell-modules {
       buildHaskellPackages = bh.packages.ghc864;
       ghc = bh.compiler.ghc864;
+      compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.6.x.nix { };
+    };
+    ghc865 = callPackage ../development/haskell-modules {
+      buildHaskellPackages = bh.packages.ghc865;
+      ghc = bh.compiler.ghc865;
       compilerConfig = callPackage ../development/haskell-modules/configuration-ghc-8.6.x.nix { };
     };
     ghcHEAD = callPackage ../development/haskell-modules {
