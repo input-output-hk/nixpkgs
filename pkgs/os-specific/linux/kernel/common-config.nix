@@ -100,6 +100,7 @@ let
       IP_VS_PROTO_UDP    = yes;
       IP_VS_PROTO_ESP    = yes;
       IP_VS_PROTO_AH     = yes;
+      IP_VS_IPV6         = yes;
       IP_DCCP_CCID3      = no; # experimental
       CLS_U32_PERF       = yes;
       CLS_U32_MARK       = yes;
@@ -184,6 +185,7 @@ let
       VGA_SWITCHEROO         = yes; # Hybrid graphics support
       DRM_GMA600             = yes;
       DRM_GMA3600            = yes;
+      DRM_VMWGFX_FBCON       = yes;
       # necessary for amdgpu polaris support
       DRM_AMD_POWERPLAY = whenBetween "4.5" "4.9" yes;
       # (experimental) amdgpu support for verde and newer chipsets
@@ -232,6 +234,7 @@ let
       USB_DEBUG = { optional = true; tristate = whenOlder "4.18" "n";};
       USB_EHCI_ROOT_HUB_TT = yes; # Root Hub Transaction Translators
       USB_EHCI_TT_NEWSCHED = yes; # Improved transaction translator scheduling
+      USB_HIDDEV = yes; # USB Raw HID Devices (like monitor controls and Uninterruptable Power Supplies)
     };
 
     # Filesystem options - in particular, enable extended attributes and
@@ -548,7 +551,9 @@ let
       TEST_ASYNC_DRIVER_PROBE  = option no;
       WW_MUTEX_SELFTEST        = option no;
       XZ_DEC_TEST              = option no;
-    } // optionalAttrs (features.criu or false) ({
+    };
+
+    criu = optionalAttrs (features.criu or false) ({
       EXPERT              = yes;
       CHECKPOINT_RESTORE  = yes;
     } // optionalAttrs (features.criu_revert_expert or true) {
@@ -687,12 +692,20 @@ let
       HOTPLUG_PCI_ACPI = yes; # PCI hotplug using ACPI
       HOTPLUG_PCI_PCIE = yes; # PCI-Expresscard hotplug support
 
+      # Enable AMD's ROCm GPU compute stack
+      HSA_AMD = whenAtLeast "4.20" yes;
+
+      PREEMPT = no;
+      PREEMPT_VOLUNTARY = yes;
+
     } // optionalAttrs (stdenv.hostPlatform.system == "x86_64-linux" || stdenv.hostPlatform.system == "aarch64-linux") {
-      # Enable memory hotplug support
-      # Allows you to dynamically add & remove memory to a VM client running NixOS without requiring a reboot
+      # Enable CPU/memory hotplug support
+      # Allows you to dynamically add & remove CPUs/memory to a VM client running NixOS without requiring a reboot
+      ACPI_HOTPLUG_CPU = yes;
       ACPI_HOTPLUG_MEMORY = yes;
       MEMORY_HOTPLUG = yes;
       MEMORY_HOTREMOVE = yes;
+      HOTPLUG_CPU = yes;
       MIGRATION = yes;
       SPARSEMEM = yes;
 
@@ -700,8 +713,8 @@ let
       # instances and Xeon Phi.
       NR_CPUS = freeform "384";
     } // optionalAttrs (stdenv.hostPlatform.system == "aarch64-linux") {
-      PREEMPT = no;
-      PREEMPT_VOLUNTARY = yes;
+      # Enables support for the Allwinner Display Engine 2.0
+      SUN8I_DE2_CCU = whenAtLeast "4.13" yes;
     };
   };
 in
