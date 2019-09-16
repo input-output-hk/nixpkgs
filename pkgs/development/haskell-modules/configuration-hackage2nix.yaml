@@ -2870,7 +2870,6 @@ broken-packages:
   - amazon-emailer
   - amazon-emailer-client-snap
   - amazon-products
-  - amazonka
   - amazonka-alexa-business
   - amazonka-apigateway
   - amazonka-application-autoscaling
@@ -2906,7 +2905,6 @@ broken-packages:
   - amazonka-comprehend
   - amazonka-config
   - amazonka-connect
-  - amazonka-core
   - amazonka-cost-explorer
   - amazonka-cur
   - amazonka-datapipeline
@@ -2981,7 +2979,6 @@ broken-packages:
   - amazonka-route53
   - amazonka-route53-autonaming
   - amazonka-route53-domains
-  - amazonka-s3
   - amazonka-s3-streaming
   - amazonka-sagemaker
   - amazonka-sagemaker-runtime
@@ -3001,7 +2998,6 @@ broken-packages:
   - amazonka-sts
   - amazonka-support
   - amazonka-swf
-  - amazonka-test
   - amazonka-transcribe
   - amazonka-translate
   - amazonka-waf
