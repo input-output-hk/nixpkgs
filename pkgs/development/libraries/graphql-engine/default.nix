@@ -28,9 +28,6 @@ stdenv.mkDerivation rec {
   ];
 
   checkInputs = [
-    dbus
-    xvfb_run
-    xlibs.xauth
   ];
 
   doCheck = false;   # Off for now, until this nix files is more complete
