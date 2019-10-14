@@ -9753,6 +9753,8 @@ in
 
   graphene = callPackage ../development/libraries/graphene { };
 
+  graphql-engine = callPackage ../development/libraries/graphql-engine { };
+
   gtk-doc = callPackage ../development/tools/documentation/gtk-doc { };
 
   gtkdialog = callPackage ../development/tools/misc/gtkdialog { };
