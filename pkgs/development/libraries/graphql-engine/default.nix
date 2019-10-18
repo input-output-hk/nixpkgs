@@ -1,6 +1,7 @@
 { stdenv
 , fetchFromGitHub
 , nodejs
+, google-cloud-sdk
 , brotli
 , libpqxx
 , python3
@@ -24,16 +25,25 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     brotli
+    google-cloud-sdk
     libpqxx
   ];
 
   checkInputs = [
   ];
 
-  doCheck = false;   # Off for now, until this nix files is more complete
+  databaseoCheck = true;
 
-  checkPhase = ''
-    echo placeholder
+  preConfigure =
+    ''
+    '';
+
+  buildPhase = ''
+    runHook preBuild
+    cd console
+    npm ci
+    npm run server-build
+    cd ..
   '';
 
   meta = with stdenv.lib; {
