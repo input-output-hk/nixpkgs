@@ -1,9 +1,11 @@
-{ stdenv, fetchFromGitLab, buildGoPackage, ruby, bundlerEnv, pkgconfig, libgit2 }:
+{ stdenv, fetchFromGitLab, fetchFromGitHub, buildGoPackage, ruby,
+  bundlerEnv, pkgconfig, libgit2 }:
 
 let
   rubyEnv = bundlerEnv rec {
     name = "gitaly-env";
     inherit ruby;
+    copyGemFiles = true;
     gemdir = ./.;
     gemset =
       let x = import (gemdir + "/gemset.nix");
@@ -17,14 +19,14 @@ let
       };
   };
 in buildGoPackage rec {
-  version = "1.77.1";
+  version = "12.8.2";
   pname = "gitaly";
 
   src = fetchFromGitLab {
     owner = "gitlab-org";
     repo = "gitaly";
     rev = "v${version}";
-    sha256 = "08xc9lxlvga36yq1wdvb1h4zk70c36qspyd7azhkw84kzwfrif1c";
+    sha256 = "1zc44y5yl799vqg12w3iaivk4xwj9i4k6f198svplipa760nl9ic";
   };
 
   # Fix a check which assumes that hook files are writeable by their

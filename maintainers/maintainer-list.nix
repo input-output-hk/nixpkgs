@@ -2912,6 +2912,12 @@
     githubId = 1198065;
     name = "Jeffrey David Johnson";
   };
+  jefflabonte = {
+    email = "grimsleepless@protonmail.com";
+    github = "jefflabonte";
+    githubId = 9425955;
+    name = "Jean-François Labonté";
+  };
   jensbin = {
     email = "jensbin+git@pm.me";
     github = "jensbin";
@@ -6906,7 +6912,7 @@
     email = "worldofpeace@protonmail.ch";
     github = "worldofpeace";
     githubId = 28888242;
-    name = "Worldofpeace";
+    name = "worldofpeace";
   };
   wscott = {
     email = "wsc9tt@gmail.com";
