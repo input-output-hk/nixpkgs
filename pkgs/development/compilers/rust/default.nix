@@ -19,8 +19,11 @@
       "armv7l" = "armv7";
       "armv6l" = "arm";
     }.${cpu.name} or platform.rustc.arch or cpu.name;
+    vendorMap = {
+      w64 = "pc";
+    };
   in platform.rustc.config
-    or "${cpu_}-${vendor.name}-${kernel.name}${lib.optionalString (abi.name != "unknown") "-${abi.name}"}";
+    or "${cpu_}-${vendorMap.${vendor.name} or vendor.name}-${kernel.name}${lib.optionalString (abi.name != "unknown") "-${abi.name}"}";
 
   makeRustPlatform = { rustc, cargo, ... }: rec {
     rust = {
