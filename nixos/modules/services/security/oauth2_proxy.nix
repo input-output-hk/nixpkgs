@@ -32,32 +32,34 @@ let
   getProviderOptions = cfg: provider: providerSpecificOptions.${provider} or (_: {}) cfg;
 
   allConfig = with cfg; {
-    inherit (cfg) provider scope upstream;
-    approval-prompt = approvalPrompt;
     basic-auth-password = basicAuthPassword;
-    client-id = clientID;
-    client-secret = clientSecret;
     custom-templates-dir = customTemplatesDir;
     email-domain = email.domains;
-    http-address = httpAddress;
-    login-url = loginURL;
-    pass-access-token = passAccessToken;
-    pass-basic-auth = passBasicAuth;
-    pass-host-header = passHostHeader;
     reverse-proxy = reverseProxy;
     proxy-prefix = proxyPrefix;
-    profile-url = profileURL;
-    redeem-url = redeemURL;
     redirect-url = redirectURL;
     request-logging = requestLogging;
     skip-auth-regex = skipAuthRegexes;
     signature-key = signatureKey;
-    validate-url = validateURL;
     htpasswd-file = htpasswd.file;
     cookie = {
       inherit (cookie) domain secure expire name secret refresh;
       httponly = cookie.httpOnly;
     };
+  } // lib.optionalAttrs (cfg.alphaConfig == null) {
+    # Only valid if alpha config is not used:
+    inherit (cfg) provider scope upstream;
+    approval-prompt = approvalPrompt;
+    client-id = clientID;
+    client-secret = clientSecret;
+    http-address = httpAddress;
+    login-url = loginURL;
+    pass-access-token = passAccessToken;
+    pass-basic-auth = passBasicAuth;
+    pass-host-header = passHostHeader;
+    profile-url = profileURL;
+    redeem-url = redeemURL;
+    validate-url = validateURL;
     set-xauthrequest = setXauthrequest;
   } // lib.optionalAttrs (cfg.email.addresses != null) {
     authenticated-emails-file = authenticatedEmailsFile;
@@ -69,6 +71,9 @@ let
     tls-cert-file = tls.certificate;
     tls-key-file = tls.key;
     https-address = tls.httpsAddress;
+  } // lib.optionalAttrs (cfg.alphaConfig != null) {
+    alpha-config = builtins.toFile "oauth2_proxy-alpha-config.json"
+      (builtins.toJSON cfg.alphaConfig);
   } // (getProviderOptions cfg cfg.provider) // cfg.extraConfig;
 
   mapConfig = key: attr:
@@ -541,6 +546,14 @@ in
       type = types.attrsOf types.anything;
       description = ''
         Extra config to pass to oauth2-proxy.
+      '';
+    };
+
+    alphaConfig = mkOption {
+      default = null;
+      description = ''
+        Alpha config to pass to oauth2-proxy.
+        If used, all other config options are ignored.
       '';
     };
 
